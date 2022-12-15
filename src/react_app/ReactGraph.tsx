@@ -2,11 +2,11 @@ import * as React from 'react';
 
 import {
   GraphView,
-  type IEdgeType as IEdge,
-  type INodeType as INode,
-  type LayoutEngineType,
-  type SelectionT,
-  type IPoint,
+  IEdge,
+  INode,
+  LayoutEngineType,
+  SelectionT,
+  IPoint,
 } from 'react-digraph';
 import GraphConfig, {
   edgeTypes,
@@ -127,7 +127,7 @@ const sample: IGraph = {
     {
       id: 'a5',
       title: 'Node E (5)',
-      type: null,
+      type: undefined,
       x: 50.5757598876953,
       y: 500.81818389892578,
     },
@@ -155,7 +155,7 @@ const sample: IGraph = {
   ],
 };
 
-function generateSample(totalNodes) {
+function generateSample(totalNodes: number | undefined) {
   const generatedSample: IGraph = {
     edges: [],
     nodes: [],
@@ -201,8 +201,7 @@ type IGraphProps = {};
 
 type IGraphState = {
   graph: any,
-  selected: any,
-  selected: SelectionT | null,
+  selected: SelectionT | any | null,
   totalNodes: number,
   copiedNode: null | INode,
   copiedNodes: null | INode[],
@@ -210,6 +209,8 @@ type IGraphState = {
   layoutEngineType?: LayoutEngineType,
   allowMultiselect: boolean,
   locationOverrides?: Object,
+  selectedNodes: null | INode[],
+  selectedEdges: null | IEdge[],
 };
 
 class Graph extends React.Component<IGraphProps, IGraphState> {
@@ -222,16 +223,16 @@ class Graph extends React.Component<IGraphProps, IGraphState> {
       copiedNode: null,
       copiedNodes: null,
       copiedEdges: null,
-      graph: props.graphParam,
-      //graph: sample,
+      //graph: props.graphParam,
+      graph: sample,
       layoutEngineType: undefined,
       selected: null,
       selectedNodes: null,
       selectedEdges: null,
-      totalNodes: props.graphParam.nodes.length,
-      //totalNodes: sample.nodes.length,
+      //totalNodes: props.graphParam.nodes.length,
+      totalNodes: sample.nodes.length,
       allowMultiselect: true,
-      locationOverrides: {},
+      locationOverrides: {}
     };
 
     this.GraphView = React.createRef();
@@ -239,14 +240,14 @@ class Graph extends React.Component<IGraphProps, IGraphState> {
 
   // Helper to find the index of a given node
   getNodeIndex(searchNode: INode | any) {
-    return this.state.graph.nodes.findIndex(node => {
+    return this.state.graph.nodes.findIndex((node: INode) => {
       return node[NODE_KEY] === searchNode[NODE_KEY];
     });
   }
 
   // Helper to find the index of a given edge
   getEdgeIndex(searchEdge: IEdge) {
-    return this.state.graph.edges.findIndex(edge => {
+    return this.state.graph.edges.findIndex((edge: INode) => {
       return (
         edge.source === searchEdge.source && edge.target === searchEdge.target
       );
@@ -255,7 +256,7 @@ class Graph extends React.Component<IGraphProps, IGraphState> {
 
   // Given a nodeKey, return the corresponding node
   getViewNode(nodeKey: string) {
-    const searchNode = {};
+    const searchNode: {[key: string]: string} = {};
 
     searchNode[NODE_KEY] = nodeKey;
     const i = this.getNodeIndex(searchNode);
@@ -320,12 +321,12 @@ class Graph extends React.Component<IGraphProps, IGraphState> {
   // to sync updates from D3 with the graph
   onUpdateNode = (
     viewNode: INode,
-    selectedNodes: Map<string, INode>,
+    updatedNodes: Map<string, INode> | null | undefined,
     position?: Object
   ) => {
     const graph = this.state.graph;
     const i = this.getNodeIndex(viewNode);
-    const overrides = {
+    const overrides: any = {
       ...this.state.locationOverrides,
       [viewNode.id]: position,
     };
@@ -379,14 +380,14 @@ class Graph extends React.Component<IGraphProps, IGraphState> {
   deleteEdgesForNode(nodeID: string) {
     const { graph } = this.state;
     const edgesToDelete = graph.edges.filter(
-      edge => edge.source === nodeID || edge.target === nodeID
+      (edge: any) => edge.source === nodeID || edge.target === nodeID
     );
 
     const newEdges = graph.edges.filter(
-      edge => edge.source !== nodeID && edge.target !== nodeID
+        (edge: any) => edge.source !== nodeID && edge.target !== nodeID
     );
 
-    edgesToDelete.forEach(edge => {
+    edgesToDelete.forEach((edge: any) => {
       this.onDeleteEdge(edge, newEdges);
     });
   }
@@ -477,8 +478,8 @@ class Graph extends React.Component<IGraphProps, IGraphState> {
       return;
     }
 
-    let cornerX;
-    let cornerY;
+    let cornerX: number | null;
+    let cornerY: number | null;
 
     selected?.nodes?.forEach((copiedNode: INode) => {
       // find left-most node and record x position
@@ -494,13 +495,13 @@ class Graph extends React.Component<IGraphProps, IGraphState> {
 
     // Keep track of the mapping of old IDs to new IDs
     // so we can recreate the edges
-    const newIDs = {};
+    const newIDs: {[key: string]: string} = {};
 
     // Every node position is relative to the top and left-most corner
     const newNodes = new Map(
       [...(selected?.nodes?.values() || [])].map((copiedNode: INode) => {
-        const x = mouseX + ((copiedNode.x || 0) - cornerX);
-        const y = mouseY + ((copiedNode.y || 0) - cornerY);
+        const x = mouseX + ((copiedNode.x || 0) - (cornerX || 0));
+        const y = mouseY + ((copiedNode.y || 0) - (cornerY || 0));
 
         // Here you would usually create a new node using an API
         // We don't have an API, so we'll mock out the node ID
@@ -599,7 +600,7 @@ class Graph extends React.Component<IGraphProps, IGraphState> {
           <div className="pan-list">
             <span>Pan To:</span>
             <select onChange={this.onSelectPanNode}>
-              {nodes.map(node => (
+              {nodes.map((node: any) => (
                 <option key={node[NODE_KEY]} value={node[NODE_KEY]}>
                   {node.title}
                 </option>
@@ -609,7 +610,7 @@ class Graph extends React.Component<IGraphProps, IGraphState> {
         </div>
         <div id="graph" style={{ height: 'calc(100% - 87px)' }}>
           <GraphView
-            ref={el => (this.GraphView = el)}
+            ref={(el: any) => (this.GraphView = el)}
             allowMultiselect={allowMultiselect}
             nodeKey={NODE_KEY}
             nodes={nodes}
