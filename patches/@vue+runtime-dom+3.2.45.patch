@@ -1,17 +1,29 @@
 diff --git a/node_modules/@vue/runtime-dom/dist/runtime-dom.d.ts b/node_modules/@vue/runtime-dom/dist/runtime-dom.d.ts
-index e61fa05..e22cddc 100644
+index e61fa05..d15c30d 100644
 --- a/node_modules/@vue/runtime-dom/dist/runtime-dom.d.ts
 +++ b/node_modules/@vue/runtime-dom/dist/runtime-dom.d.ts
-@@ -1497,7 +1497,7 @@ type NativeElements = {
+@@ -1485,6 +1485,8 @@ type ReservedProps = {
+   ref?: RuntimeCore.VNodeRef
+   ref_for?: boolean
+   ref_key?: string
++  children?: any
++  className?: any
+ }
+ 
+ type ElementAttrs<T> = T & ReservedProps
+@@ -1497,9 +1499,9 @@ type NativeElements = {
  
  declare global {
    namespace JSX {
 -    interface Element extends VNode {}
 +    // interface Element extends VNode {}
      interface ElementClass {
-       $props: {}
+-      $props: {}
++      $props?: {}
      }
-@@ -1509,7 +1509,7 @@ declare global {
+     interface ElementAttributesProperty {
+       $props: {}
+@@ -1509,7 +1511,7 @@ declare global {
        // @ts-ignore suppress ts:2374 = Duplicate string index signature.
        [name: string]: any
      }
