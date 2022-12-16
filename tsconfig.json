@@ -33,11 +33,10 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src/react_app/ReactGraph.tsx",
-   "src/**/*.vue",
+    "src/**/*.vue",
     "tests/**/*.ts",
-    "tests/**/*.tsx"
-, "src/react_app/ReactGraph.tsx"  ],
+    "tests/**/*.tsx" 
+  ],
   "exclude": [
     "node_modules"
   ]

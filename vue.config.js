@@ -10,15 +10,6 @@ module.exports = {
     },
   },
   configureWebpack: {
-    resolve: {
-      alias: {
-        ...(process.env.BUILD_TYPE === "remote"
-          ? {}
-          : { veaury: path.resolve(__dirname, "../veaury/src") }),
-        src: path.resolve(__dirname, "./src"),
-        react_app: path.resolve(__dirname, "./src/react_app"),
-      },
-    },
     plugins: [
       new ReactRefreshWebpackPlugin({
         overlay: false,
