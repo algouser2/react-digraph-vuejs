@@ -201,7 +201,7 @@ type IGraphProps = {};
 
 type IGraphState = {
   graph: any,
-  selected: SelectionT | any | null,
+  selected: SelectionT | null,
   totalNodes: number,
   copiedNode: null | INode,
   copiedNodes: null | INode[],
@@ -363,35 +363,6 @@ class Graph extends React.Component<IGraphProps, IGraphState> {
     this.setState({ graph });
   };
 
-  // Deletes a node from the graph
-  onDeleteNode = (viewNode: INode, nodeId: string, nodeArr: INode[]) => {
-    // Note: onDeleteEdge is also called from react-digraph for connected nodes
-    const graph = this.state.graph;
-
-    graph.nodes = nodeArr;
-
-    this.deleteEdgesForNode(nodeId);
-
-    this.setState({ graph, selected: null });
-  };
-
-  // Whenever a node is deleted the consumer must delete any connected edges.
-  // react-digraph won't call deleteEdge for multi-selected edges, only single edge selections.
-  deleteEdgesForNode(nodeID: string) {
-    const { graph } = this.state;
-    const edgesToDelete = graph.edges.filter(
-      (edge: any) => edge.source === nodeID || edge.target === nodeID
-    );
-
-    const newEdges = graph.edges.filter(
-        (edge: any) => edge.source !== nodeID && edge.target !== nodeID
-    );
-
-    edgesToDelete.forEach((edge: any) => {
-      this.onDeleteEdge(edge, newEdges);
-    });
-  }
-
   // Creates a new node between two edges
   onCreateEdge = (sourceViewNode: INode, targetViewNode: INode) => {
     const graph = this.state.graph;
@@ -443,16 +414,55 @@ class Graph extends React.Component<IGraphProps, IGraphState> {
     });
   };
 
-  // Called when an edge is deleted
-  onDeleteEdge = (viewEdge: IEdge, edges: IEdge[]) => {
+  onDeleteSelected = (selection: SelectionT) => {
     const graph = this.state.graph;
+    let newEdges = this.state.graph.edges;
 
-    graph.edges = edges;
-    this.setState({
-      graph,
-      selected: null,
+    // If there are selected nodes, first delete
+    // all edges associated with this node
+    if (selection.nodes) {
+      selection.nodes.forEach(selectedNode => {
+        newEdges = newEdges.filter((testEdge: IEdge) => {
+          // If there is an edge with a source or target pointing
+          // to this node, filter it out
+          if (
+            testEdge.source === selectedNode.id ||
+            testEdge.target === selectedNode.id
+          ) {
+            return false;
+          }
+
+          return true;
+        });
+      });
+    }
+    // Delete all selected nodes
+    const newNodes = this.state.graph.nodes.filter((testNode: INode) => {
+      const testNodeId = testNode.id;
+
+      // Filter out if the selection contains this node
+      if (selection.nodes && selection.nodes.has(testNodeId)) {
+        return false;
+      }
+
+      return true;
     });
-  };
+
+    // Delete all selected edges
+    newEdges = newEdges.filter((testEdge: IEdge) => {
+      const testEdgeId = `${testEdge.source}_${testEdge.target}`;
+
+      // Filter out if the selection contains this edge
+      if (selection.edges && selection.edges.has(testEdgeId)) {
+        return false;
+      }
+
+      return true;
+    });
+
+    graph.nodes = newNodes;
+    graph.edges = newEdges;
+  }
 
   onUndo = () => {
     // Not implemented
@@ -622,10 +632,10 @@ class Graph extends React.Component<IGraphProps, IGraphState> {
             onSelect={this.onSelect}
             onCreateNode={this.onCreateNode}
             onUpdateNode={this.onUpdateNode}
-            onDeleteNode={this.onDeleteNode}
             onCreateEdge={this.onCreateEdge}
             onSwapEdge={this.onSwapEdge}
-            onDeleteEdge={this.onDeleteEdge}
+            canDeleteSelected={() => true}
+            onDeleteSelected={this.onDeleteSelected}
             onUndo={this.onUndo}
             onCopySelected={this.onCopySelected}
             onPasteSelected={this.onPasteSelected}

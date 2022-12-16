@@ -1,14 +1,12 @@
 diff --git a/node_modules/react-digraph/typings/index.d.ts b/node_modules/react-digraph/typings/index.d.ts
-index 904645a..6672a41 100644
+index 904645a..20d07f8 100644
 --- a/node_modules/react-digraph/typings/index.d.ts
 +++ b/node_modules/react-digraph/typings/index.d.ts
-@@ -173,6 +173,10 @@ declare module 'react-digraph' {
+@@ -173,6 +173,8 @@ declare module 'react-digraph' {
      rotateEdgeHandle?: boolean;
      centerNodeOnMove?: boolean;
      initialBBox?: IBBox;
 +
-+    onDeleteNode: (viewNode: INode, nodeId: string, nodeArr: INode[]) => void;
-+    onDeleteEdge: (viewEdge: IEdge, edges: IEdge[]) => void;
 +    nodeLocationOverrides: Object | undefined;
    };
  
